@@ -116,7 +116,9 @@ sans `node_modules` complet.
 #      ufw status && ufw allow 80/tcp && ufw allow 443/tcp
 
 # 3. Sur le VPS
-apt-get update && apt-get install -y docker.io docker-compose-plugin git
+# docker-compose-plugin est le nom du paquet dans le dépôt officiel
+# Docker ; sur Ubuntu c'est docker-compose-v2.
+apt-get update && apt-get install -y docker.io docker-compose-v2 git
 git clone <url-du-depot> /opt/portfolio && cd /opt/portfolio
 
 # 4. Variables : le fichier sert à la fois à l'interpolation Compose
