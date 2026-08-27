@@ -1,0 +1,60 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      # Aucun conteneur n'est exposé sans un label explicite.
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Tout le trafic clair est renvoyé en HTTPS.
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # En lecture seule : Traefik n'a besoin que de lire les labels.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - web
+
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: portfolio:latest
+    container_name: portfolio
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    expose:
+      - "3000"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.portfolio.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)
+      - traefik.http.routers.portfolio.entrypoints=websecure
+      - traefik.http.routers.portfolio.tls.certresolver=letsencrypt
+      - traefik.http.services.portfolio.loadbalancer.server.port=3000
+      # www -> apex, en 301
+      - traefik.http.routers.portfolio.middlewares=www-to-apex
+      - traefik.http.middlewares.www-to-apex.redirectregex.regex=^https://www\.(.*)
+      - traefik.http.middlewares.www-to-apex.redirectregex.replacement=https://$${1}
+      - traefik.http.middlewares.www-to-apex.redirectregex.permanent=true
+
+networks:
+  web:
+    name: web
+
+volumes:
+  letsencrypt:

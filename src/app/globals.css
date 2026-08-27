@@ -1,26 +1,152 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bg: #0b1120;
+  --color-bgsoft: #111b30;
+  --color-line: #1e2a44;
+  --color-muted: #8fa3bf;
+  --color-heading: #e6edf7;
+  --color-accent: #5eead4;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Une seule courbe pour tout le site : les mouvements se ressemblent. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-muted);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(94, 234, 212, 0.25);
+  color: var(--color-heading);
+}
+
+/* Grille de fond très discrète, estompée vers le bas */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(94, 234, 212, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(94, 234, 212, 0.04) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 70% 50% at 50% 0%,
+    #000 20%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 70% 50% at 50% 0%,
+    #000 20%,
+    transparent 100%
+  );
+}
+
+/* Révélation au scroll — trois variantes, une seule mécanique */
+.reveal {
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+}
+
+/* Montée : le défaut, pour les blocs de contenu. */
+.reveal--up {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+/* Fondu seul : quand un déplacement décalerait la mise en page. */
+.reveal--fade {
+  opacity: 0;
+}
+
+/* Trait qui se dessine de gauche à droite : les séparateurs de section. */
+.reveal--rule {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s var(--ease-out);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrée au chargement : au-dessus de la ligne de flottaison, il n'y a rien
+   à observer — la cascade se joue au premier rendu. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.75s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal,
+  .reveal--up,
+  .reveal--fade,
+  .reveal--rule {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .rise {
+    animation: none;
+  }
+  /* Les survols perdent leur déplacement, pas leur retour visuel. */
+  .lift:hover {
+    transform: none;
+  }
+}
+
+/* Piste du carrousel : la barre est masquée, le geste et les boutons pilotent */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scrollbar sobre */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2a44;
+  border-radius: 999px;
+  border: 3px solid #0b1120;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b3a5c;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
