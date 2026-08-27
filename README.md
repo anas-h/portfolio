@@ -109,16 +109,22 @@ sans `node_modules` complet.
 #    Ne pas toucher aux enregistrements MX ni au SPF : ils servent la
 #    messagerie OVH du domaine.
 
-# 2. Sur le VPS
+# 2. Pare-feu : un VPS IONOS n'ouvre que SSH par défaut. Ouvrir 80 et 443
+#    dans le Cloud Panel IONOS (Réseau > Politiques de pare-feu), sinon le
+#    challenge HTTP de Let's Encrypt échoue et rien n'est servi.
+#    Vérifier aussi ufw sur l'hôte :
+#      ufw status && ufw allow 80/tcp && ufw allow 443/tcp
+
+# 3. Sur le VPS
 apt-get update && apt-get install -y docker.io docker-compose-plugin git
 git clone <url-du-depot> /opt/portfolio && cd /opt/portfolio
 
-# 3. Variables : le fichier sert à la fois à l'interpolation Compose
+# 4. Variables : le fichier sert à la fois à l'interpolation Compose
 #    (DOMAIN, ACME_EMAIL) et aux variables du conteneur (RESEND_*).
 cp .env.production.example .env.production
 $EDITOR .env.production
 
-# 4. Démarrage
+# 5. Démarrage
 docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 ```
 
