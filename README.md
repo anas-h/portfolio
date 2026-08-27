@@ -87,7 +87,8 @@ du spam.
 ## Déploiement
 
 Production : VPS IONOS sous Ubuntu 24.04, Docker Compose et Traefik.
-`anasshilama.com`.
+Domaine `anasshilama.com`, enregistré chez OVH — la zone DNS se gère donc
+dans l'espace client OVH, pas chez IONOS.
 
 Le site **ne peut pas être exporté en statique** : `src/proxy.ts` (redirection
 `/` → langue) et la Server Action du formulaire ont besoin d'un runtime Node.
@@ -97,10 +98,16 @@ sans `node_modules` complet.
 ### Première mise en place
 
 ```bash
-# 1. DNS chez IONOS, avant tout le reste : Let's Encrypt valide par HTTP,
+# 1. DNS avant tout le reste : Let's Encrypt valide par challenge HTTP,
 #    le domaine doit déjà pointer sur le VPS.
-#    A     @     <IP du VPS>
-#    A     www   <IP du VPS>
+#
+#    Le domaine est chez OVH (serveurs de noms ns111 / dns111.ovh.net),
+#    le VPS est chez IONOS. La zone à modifier est donc celle d'OVH :
+#      A     @     <IP du VPS IONOS>
+#      A     www   <IP du VPS IONOS>
+#
+#    Ne pas toucher aux enregistrements MX ni au SPF : ils servent la
+#    messagerie OVH du domaine.
 
 # 2. Sur le VPS
 apt-get update && apt-get install -y docker.io docker-compose-plugin git
